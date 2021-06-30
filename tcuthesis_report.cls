@@ -753,7 +753,7 @@
 \RequirePackage{setspace}
 \RequirePackage{natbib}
 \RequirePackage[pdftex]{graphicx}\citestyle{aa} 
-\bibliographystyle{apj}
+\bibliographystyle{apa}
 \bibpunct{(}{)}{,}{a}{}{;}
 \setcounter{secnumdepth}{3}
 

@@ -42,25 +42,28 @@
 \advisor{Major Advisor, XXXXXX Professor of Physics}    % Full name and title of your advisor
 
 \frontmatter 
-\acknowledgements{TextBlock/acknowledgements.tf}  % Document which contains the text of your acknowledgements
+\acknowledgements{TextBlock/acknowledgements}  % Document which contains the text of your acknowledgements
 \tableofcontents
 \clearpage \listoffigures
 \clearpage \listoftables
 	
 \mainmatter % Remove the following \input commands and change them to the files containing the text of your document
-\clearpage \input{TextBlock/glossary.tf} %list of abvs.
-%Put a summary paragaph at the end paraghraph
-\input{TextBlock/chapter1.tf} %predis
-\input{TextBlock/chapter2.tf} %compsci
-\input{TextBlock/chapter3.tf} %Covidpaper
-\input{TextBlock/chapter4.tf} % put all discussion here and maybe first section of discussion sections stay with chapters
+\clearpage \input{TextBlock/abbreviations} %list of abvs.
+\chapter{Introduction}
+\input{TextBlock/chapter1}
+\chapter{Methods}
+\input{TextBlock/chapter2}
+\chapter{Results}
+\input{TextBlock/chapter3}
+\chapter{Discussion}
+\input{TextBlock/chapter4}
 
 \appendix   % Use \input statements to include any necessary appendices
-\input{TextBlock/app_if_needed.tf}
+\input{TextBlock/app_if_needed}
 
 \backmatter 
 \bibliography{allbibliographies.bib}
-\vita{TextBlock/vita.tf}  % Document which contains the text or tabular with your vita information
-\abstract{TextBlock/abstract.tf}  % Document which contains the text of your abstract
+\vita{TextBlock/vita}  % Document which contains the text or tabular with your vita information
+\abstract{TextBlock/abstract}  % Document which contains the text of your abstract
 
 \end{document}
