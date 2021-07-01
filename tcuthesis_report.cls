@@ -752,8 +752,8 @@
 \RequirePackage{fancyhdr}
 \RequirePackage{setspace}
 \RequirePackage{natbib}
-\RequirePackage[pdftex]{graphicx}\citestyle{aa} 
-\bibliographystyle{apa}
+\RequirePackage[pdftex]{graphicx}%\citestyle{aa} 
+\bibliographystyle{abbrvnat}
 \bibpunct{(}{)}{,}{a}{}{;}
 \setcounter{secnumdepth}{3}
 
@@ -819,6 +819,7 @@
     \vskip 32pt \line(1,0){450} \\ \@commtwo
     \vskip 32pt \line(1,0){450} \\ \@commthree
     \vskip 32pt \line(1,0){450} \\ \@commfour
+    \vskip 32pt \line(1,0){450} \\ \@commfive
     \vskip 32pt \line(1,0){450} \\ For The College of Science and Engineering
   \end{center}
   \end{titlepage}
