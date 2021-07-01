@@ -1,3 +1,6 @@
+
+By the methods presented in the previous chapter, a model that has the spatial spread of virus, can produce simulations in seconds, and be applied to real data is able to be used to study viruses. In this chapter, the accuracy, speed, and applicability of the model is presented. I will show accurate simulations of plaque assays, the speed increase of the simulations by GPUs, and the analysis of virus infections.
+
 \section{Introduction}
 
 The novel coronavirus, SARS-CoV-2, originated in Wuhan, China in late 2019 and rapidly spread around the world \citep{chen20,wu20}. This virus causes the Covid-19 disease which can lead to severe illness needing long hospitalization \citep{sun20,goyal20,jiang20}, but at the same time a significant fraction of those who contract the virus experience an asymptomatic Covid-19 disease \citep{he20}. It is still not entirely clear who is at risk for developing severe disease, although correlations of disease severity with levels of vitamin D \citep{ilie20}, levels of various immune components \citep{liu20imm,liu20imm2,zhang20imm,yang20imm}, and age \citep{borghesi20,zhang20imm} have been noted. There has also been investigation of the possibility of disease severity being linked to initial viral inoculum \citep{little20, guallar20, ghandi20}.
@@ -43,6 +46,7 @@ $D^d$ & Diffusion coefficient & $\SI{4.80e-12}{\meter^2\per\second}$ \\
 
 \subsection{Measurements}
 
+
 We simulate SARS-CoV-2 infections starting with different multiplicity of infection (MOI) where the MOI value defines the initial number of infected cells. The ABM/PDM model is implemented in Compute Unified Device Architecture (CUDA) and run on NVIDIA graphics processing units. We perform 100 simulated infections for each MOI and measure the following features of the viral titer curve (Fig.\ \ref{measurements}): 
 \begin{itemize}
 \item \textbf{peak viral load:} The maximum amount of virus is commonly used as an indicator of the transmissibility of an infection \citep{handel09}. 
@@ -81,6 +85,7 @@ For a more quantitative assessment, we measure the characteristics described in 
 \caption{Effect of initial inoculum on viral titer characteristics. The graphs show peak viral load (top left), time of viral peak (top right), viral upslope (center left), AUC (center right), and infection duration (bottom) as functions of MOI. \label{results}}
 \end{center}
 \end{figure}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}

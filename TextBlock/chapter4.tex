@@ -1,3 +1,5 @@
+In the previous chapter an accurate and quick model being applied to experimental data was shown. In the chapter, the findings, limitations, and future work of this thesis will be discussed. I will discuss how the faster speed of the simulations allows for the model to be compared with common practices in the field of computation virology, how the current limitation of a lack of all the cell processes can be addressed, and how the model will be applied in the future.
+
 \section{Findings}
 
 In this paper, we show the use of GPUs to accelerate computation of agent-based and partial-differential equation hybrid models allows for simulation results within hours, but with the necessary level of detail to capture individual cell effects, and allows for parameterizing the model quickly. The model in this work accurately replicates the diffusion of a virus, the stages of infection of individual cells, and can be fit to data within hours. While still lacking some of the biology needed for replication of \emph{in vivo} infections, the speed of computation leaves room for incorporation of additional features. Thus, this model implementation forms the foundation of a modeling and simulation tool that can accurately predict in-host viral dynamics and be quickly deployed to help combat the next pandemic.
@@ -24,8 +26,6 @@ There are other factors that affect whether a large exposure will lead to severe
 
 The model used here is fairly generic and simulates SARS-CoV-2 only through choice of parameters. However, the effect of initial inoculum on viral titer has not previously been examined in an ABM of viral dynamics. Previous studies using ordinary differential equation (ODE) models suggest that model structure and underlying assumptions change the predicted dose-response \citep{wethington19, li14}. Interestingly, the ABM is target-cell limited, and draws its parameter values from a fit of a target-cell limited model to SARS-CoV-2 data, but the dose-response trends observed here are quite different from the dose response trends observed with a traditional target-cell limited ODE model \citep{wethington19,li14}. For example, in the target-cell limited ODE, viral titer peak and growth rate do not change with initial inoculum \citep{wethington19, li14}, but the ABM predicts an increase in both. Time of viral peak and infection duration trends for the ABM are similar to those predicted by target-cell limited ODEs \citep{wethington19, li14}.
 
-
-\section{Limitations}
 \section{Future Work}
 \section{Conclusion}
 
