@@ -1,95 +1,217 @@
 
-By the methods presented in the previous chapter, a model that has the spatial spread of virus, can produce simulations in seconds, and be applied to real data is able to be used to study viruses. In this chapter, the accuracy, speed, and applicability of the model is presented. I will show accurate simulations of plaque assays, the speed increase of the simulations by GPUs, and the analysis of virus infections.
+The methods presented in the previous chapter result in a model for studying viruses that incorporates the spatial spread of virus, that has the ability to produce simulations in seconds, and has the flexibility to be applied to real data. In this chapter, the accuracy, speed, and applicability of the model is presented. I will show accurate simulations of plaque assays, the speed increase of the simulations by GPUs, and the analysis of virus infections.
 
-\section{Introduction}
+\section{Model simulation}
 
-The novel coronavirus, SARS-CoV-2, originated in Wuhan, China in late 2019 and rapidly spread around the world \citep{chen20,wu20}. This virus causes the Covid-19 disease which can lead to severe illness needing long hospitalization \citep{sun20,goyal20,jiang20}, but at the same time a significant fraction of those who contract the virus experience an asymptomatic Covid-19 disease \citep{he20}. It is still not entirely clear who is at risk for developing severe disease, although correlations of disease severity with levels of vitamin D \citep{ilie20}, levels of various immune components \citep{liu20imm,liu20imm2,zhang20imm,yang20imm}, and age \citep{borghesi20,zhang20imm} have been noted. There has also been investigation of the possibility of disease severity being linked to initial viral inoculum \citep{little20, guallar20, ghandi20}.
+Using the influenza parameters of Table \ref{tab_params}, I simulated infections initiated with 1001365 cells in a dish, of which 100 randomly chosen cells are infected and no initial virus. Figure \ref{fig_FullDish_cellandvirus} shows different views of plaques forming in the entire dish. On the left are cells in the different stages of infection described in section \ref{ABM}, where the healthy cells are colored green, eclipse cells are colored cyan, infected cells are colored red, and dead cells are colored black. On the right are figures showing the corresponding virus concentrations that are over the cells, where areas of higher concentration are colored yellow and areas of lower concentration are colored purple. Figure \ref{fig_FullDish_cellandvirus} shows the infection in 5 hour increments starting at 5 hours, when no cells are producing virus, and ending at 60 hours, when almost all the cells have died. The ABM reproduces the plaques typically seen in experimental \emph{in vitro} infections \citep{holder11H274Y}. 
 
-The major route of transmission for SARS-CoV-2 is airborne droplets \citep{morawska20}. One study indicates that sneezing and coughing creates a turbulent gas cloud that can cause viral-laden droplets to spread up to 27 feet (\numrange[range-phrase = --]{7}{8}\si{\meter}) \citep{bourouiba20}, and allows the virus to get into the ventilation system of a building. A review of literature on droplet and airborne viral spread concludes that 8 of 10 studies showed that droplets spread further than the 6 foot \citep{bahl20} social distancing recommendation. While personal protective equipment is helpful in reducing the ability of virus to enter the respiratory tract, it is not perfect \citep{mittal20}. All of these factors lead to exposures to vastly different quantities of virus when people are going about their daily activities. Thus it is important to understand whether different initial inocula lead to different viral dynamics in patients. 
+\begin{figure}
+\centering
+\begin{minipage}{0.8\linewidth}
+\centering
+\begin{multicols}{2}
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell9.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus9.png}}
 
-There is some evidence from other respiratory viruses that the size of the initial inoculum could play a role in the severity of the illness. An influenza epidemiological modeling study suggests that a higher initial dose can lead to a higher mortality rate \citep{paulo10}. This is corroborated by an influenza in-host modeling study that also finds a correlation between the initial viral dose and survival rate \citep{price15}. Other modeling studies have found dependence of other measures of infection severity on initial dose for influenza \citep{moore20}, respiratory syncytial virus \citep{wethington19}, adenovirus \citep{li14}, and porcine reproductive and respiratory virus \citep{go19}. There are also experimental studies that find a link between dose and infection severity. Experiments using influenza have found inoculum dose dependence of total number of infected cells and area under the curve \citep{manicassamy10}, peak viral titer \citep{ginsberg52,iida63,ottolini05}, viral growth rate \citep{ginsberg52}, and time of viral peak \citep{iida63,ginsberg52}. Experiments with other viruses, such as adenovirus \citep{prince93}, and parainfluenza \citep{ottolini96}, have also shown correlations between initial inoculum and various measures of disease severity. If SARS-CoV-2 shows a similar pattern, initial inoculum should be considered as a possible contributor to infection severity and adverse outcomes.
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell19.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus19.png}}
 
-\subsection{Mathematical model}
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell29.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus29.png}}
 
-We use an ABM to model transitions of cells as they go through the infection cycle. We use a hexagonal grid and simulate 10$^6$ cells in a circular dish to mimic an in vitro system. Cells begin as healthy target cells that can be infected by viruses that are sitting above them. Once infected, the cells move into an eclipse phase where they are not yet actively producing virus. The cells remain in the eclipse phase for a time chosen from an Erlang distribution with mean time $\tau_E$ and shape parameter $n_E$. The cells then pass into the infectious phase, where they are actively producing virus, for a time chosen from an Erlang distribution with mean time $\tau_I$ and shape $n_I$, after which time the cells die and no longer participate in the infection. Erlang distributions are used for both transitions based on experiments that show the time spent in the eclipse phase and the time spent in the infectious phase are best described by Erlang distributions \citep{kakizoe15, beauchemin17}, at least for SHIV. While SHIV is a different virus, it is the only virus for which these distributions have been measured directly. Influenza, another respiratory virus, has also been shown to need non-exponential transition distributions \citep{holder11autoimm, holder11}. 
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell39.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus39.png}}
 
-Viral dynamics are described by the PDM as virus diffuses over the layer of cells,
-\begin{equation}
-\frac{\partial V}{\partial t} = D\nabla^2V+p-cV,
-\end{equation}
-where $D$ is the diffusion coefficient, and $c$ is the viral decay rate. Virus is produced by infectious cells at rate $p$ and is assumed to be released directly above each infected cell. The amount of virus above any cell determines the probability that the cell will be infected, $P_\mathrm{inf}=\beta V$, where $P_\mathrm{inf}$ is the probability per unit time, and $\beta$ is the infection rate. A more detailed description of the model is given in the supplementary material and the simulation code is available on https://github.com/BaylorFain/Covid19-Code.
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell49.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus49.png}}
 
-Parameter values that describe SARS-CoV-2 are taken from a variety of sources and are given in Table \ref{params}. The majority of the parameters are taken from \citep{pinky20}, where an ordinary differential equation model of coronavirus infection was fit to viral titer data from a single patient. Note that the parameters $\beta$ and $p$ are scaled to account for the different numbers of cells (10$^6$ here and 1 in \citep{pinky20}) in the two systems as well as converting viral concentration to individual virions (see \citep{handel07,perelson12,dobrovolny17} for detailed discussions on converting from concentration to virions). The shape parameters are based on values derived from influenza infections \citep{pinilla12}, since the Erlang distribution has not yet been used for SARS-CoV-2. The diffusion coefficient was calculated using the Stokes-Einstein equation \citep{cush97}. 
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell59.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus59.png}}
+
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell69.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus69.png}}
+
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell79.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus79.png}}
+
+    \resizebox{0.48\textwidth}{!}{% 
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell89.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus89.png}}
+
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell99.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus99.png}}
+
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell109.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus109.png}}
+
+    \resizebox{0.48\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-CellPhotos/cell119.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Full-Dish-VirusPhotos/virus119.png}}
+
+\end{multicols}
+\end{minipage}
+\caption{The dish at hours 5 through 60 in 5 hour increments. On the left are cells in the different stages of infection; the stages are represented by healthy cells colored green, eclipse cells colored cyan, infected cells colored red, and dead cells colored black. On the right are images of the virions that are diffusing over the cells; areas of higher concentration are represented by yellow and areas of lower concentration are represented by purple. \label{fig_FullDish_cellandvirus}}
+\end{figure}
+
+For a closer look at the plaques, figure \ref{fig_ZoominDish} is a zoomed in view of the infection at hours 6.5, 11.5, and 16.5. The cells are shown on the left, with the same color scheme used in figure \ref{fig_FullDish_cellandvirus}, and the corresponding virus distribution is shown on the right. Here the heterogeneous growth of the plaque can clearly be see; it is not simply a radially symmetric change of cells from eclipse to infectious. \color{red} Add something like Fig.\ 8 of your proposal here. \color{black} 
+
+\begin{figure}
+\centering
+\begin{minipage}{0.66\linewidth}
+\centering
+    \resizebox{\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Zoomed-In-CellPhotos/cell12.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Zoomed-In-VirusPhotos/virus12.png}}
+
+    \vspace{0.25em}
+    \resizebox{\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Zoomed-In-CellPhotos/cell22.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Zoomed-In-VirusPhotos/virus22.png}}
+
+    \vspace{0.25em}
+    \resizebox{\textwidth}{!}{%
+        \includegraphics[width=0.48\textwidth]{Figures/Zoomed-In-CellPhotos/cell32.png}
+        \includegraphics[width=0.48\textwidth]{Figures/Zoomed-In-VirusPhotos/virus32.png}}
+\end{minipage}
+\caption{A zoomed in section of the dish looking at the plaque formed by a single infected cell during a viral infection at hours 6.5, 11.5, and 16.5. On the left are cells in the different stages of infection; the stages are represented by healthy cells colored green, eclipse cells colored cyan, infected cells colored red, and dead cells colored black. On the right are the many virus that are diffusing over the cells; areas of higher concentration are represented by yellow and areas of lower concentration are represented by purple. \label{fig_ZoominDish}}
+\end{figure}
+
+\section{Implementation on GPUs}
+
+Ten viral infections of five different numbers of cells were simulated, with codes that utilize three different programming languages: Python, C, and CUDA. The amount of computation time needed to simulate one hour of the infection, on a desktop computer, is shown in figure \ref{fig:SpeedComparison}. The computer was built with an Intel Xeon E-2144G CPU, 16 gigabytes of RAM, and P4000 Nvidia Graphics card. The compute times for the three codes increase as the number of cells in the simulations increases, but the speed increase of switching from Python, the programming language commonly used in physics, to code using CUDA for implementation on GPUs is 6954 times faster.
+\begin{figure}
+    \centering
+    \resizebox{0.6\textwidth}{!}{\includegraphics{Figures/loglogspeed.pdf}}
+\caption{With more than a million cells, CUDA is 6954 times faster then the Python code and 43 time faster than the C code. \label{fig:SpeedComparison}}
+\end{figure}
+
+%\clearpage
+\section{Convergence Testing}
+
+Three scenarios were examined when testing the convergence of the model: an infection initiated with $10013$ cells in the eclipse phase (Initial Cell); an infection initiated with $10^{12}$ virions (Initial Virus); and a scenario with no infection, but $10^{12}$ virions (Only Virus), examining viral spread and decay only. Simulations in each of the scenarios used the influenza parameters from Table \ref{tab_params}. Figure \ref{fig:ViralTiterCurves} shows the simulations of the three scenarios, where the time step was varied to test the convergence of the model in time. A time step of 0.005 hr was chosen and a range around it was made by dividing or multiplying by 2 repeatedly. This formed an array of seven time step values, 0.000625, 0.00128, 0.0025, 0.005, 0.01, 0.02, and 0.04 hr. For each time step, the median curve of ten viral titer curves is shown. In figure \ref{fig:ViralTiterCurves}, from left to right, curves of a viral infection initiated with infected cells; curves of a viral infection initiated with virus; and curves of virus without underlying cell infection. For all time steps, except $0.04$ hr, the curves are hard to distinguish from one another and follow the same trend for each scenario. 
+
+\begin{figure}
+    \centering
+    \parbox{\textwidth}{
+    \fbox{\parbox{\textwidth}{\vspace{-1em}
+    \begin{multicols}{3}
+        \centering
+
+        Initial Cell
+
+        Initial Virus
+
+        Only Virus
+    \end{multicols}
+    \vspace{-1em}}}
+
+    \vspace{0.5em}
+    \centering
+    \resizebox{0.32\textwidth}{!}{\includegraphics{Figures/Cellfree-InitialCell-AllOnOne_Median_VirusVsTime.pdf}}
+    \resizebox{0.32\textwidth}{!}{\includegraphics{Figures/Cellfree-InitialVirus-AllOnOne_Median_VirusVsTime.pdf}}
+    \resizebox{0.32\textwidth}{!}{\includegraphics{Figures/Neither-InitialVirus-AllOnOne_Median_VirusVsTime.pdf}}}
+
+\caption{The time step was varied to test the convergence of the model in time. A time step of 0.005 hr was chosen and a range around it was made by dividing or multiplying by 2 repeatedly. Seven values were used [0.000625, 0.00128, 0.0025, 0.005, 0.01, 0.02, 0.04]. The median curve of ten viral titer curves is shown for each time step. From left to right, curves of a viral infection exhibiting cell-free transmission initiated with infected cells; curves of a viral infection exhibiting cell-free transmission initiated with virus; and curves of virus without underlying cell infection. \label{fig:ViralTiterCurves}}
+\end{figure}
+
+In figure \ref{fig_AspectGraphs} the different viral titer curves are explored further by plotting the measurable characteristics mentioned in section \ref{convergence_measures} for each time step. For all the characteristics, except AUC, the amount of change was in the hundredths place or less, so for time characteristics the amount of change was less the \SI{14.5}{\minute}, for 1/time characteristics the amount of change was less the \SI{6.9e-6}{\per\minute}, and for amount of virus characteristics the amount of change was less the \num{10e10} virus particles, which is less then \SI{1}{\percent} change in the amount of virus. Note that typical experimental error in measurements of viral load are typically 0.5 $\log_{10}$(pfu/ml) \cite{labarre01}.
+
+\begin{figure}
+\centering
+\begin{minipage}{\linewidth}
+    \centering
+    \parbox{\textwidth}{
+    \fbox{\parbox{\textwidth}{\vspace{-1em}
+    \begin{multicols}{3}
+        \centering
+
+        Initial Cell
+
+        Initial Virus
+
+        Only Virus
+    \end{multicols}
+    \vspace{-1em}}}
+
+    \vspace{0.5em}
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialCell-Runs_Graphs/AUC.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialVirus-Runs_Graphs/AUC.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Neither-InitialVirus-Runs_Graphs/AUC.pdf}}
+
+
+    \resizebox{\textwidth}{!}{%
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialCell-Runs_Graphs/DownSlope.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialVirus-Runs_Graphs/DownSlope.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Neither-InitialVirus-Runs_Graphs/DownSlope.pdf}}
+
+    \resizebox{\textwidth}{!}{%
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialCell-Runs_Graphs/InfectionDuration.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialVirus-Runs_Graphs/InfectionDuration.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Neither-InitialVirus-Runs_Graphs/InfectionDuration.pdf}}
+
+    \resizebox{\textwidth}{!}{%
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialCell-Runs_Graphs/PeakViralTiter.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialVirus-Runs_Graphs/PeakViralTiter.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Neither-InitialVirus-Runs_Graphs/PeakViralTiter.pdf}}
+
+    \resizebox{\textwidth}{!}{%
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialCell-Runs_Graphs/TimeofPeakViralTiter.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialVirus-Runs_Graphs/TimeofPeakViralTiter.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Neither-InitialVirus-Runs_Graphs/TimeofPeakViralTiter.pdf}}
+
+    \resizebox{\textwidth}{!}{%
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialCell-Runs_Graphs/UpSlope.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Cellfree-InitialVirus-Runs_Graphs/UpSlope.pdf}
+    \includegraphics[width=0.33\linewidth]{Figures/Neither-InitialVirus-Runs_Graphs/UpSlope.pdf}}}
+\end{minipage}
+\caption{Characteristics of the viral titer curves where measured for each of the seven time steps and the different scenerios.\label{fig_AspectGraphs}}
+\end{figure}
+
+\section{Fitting the model to data}
+
+The model is fit to experimental \emph{in vitro} data \citep{pinilla12} via minimization of the SSR. The initial condition of the simulations were: 501535 cells in the dish (similar to the number of cells in a typical 24-well plate \citep{Number_of_cells_in_a_dish_noauthor_useful_nodate}), 50 initial infected cells, and no virus in the dish. In figure \ref{fig_DataFit}, the median curve of ten simulations, using the best fit parameters, is plotted in dark blue alongside the data in green. Our best fit parameters are presented in Table \ref{tab_datafit_params}. Although the same data was used, some of our parameter estimates differ from those reported in Pinilla et al.\ \citep{pinilla12}. Our best fit $\tau_I$ is smaller than the $\tau_I = \SI{49}{\hour}$ reported by Pinilla et al., while our best fit $\tau_E$ is larger than the $\tau_E = \SI{6.6}{\hour}$ found by Pinilla et al., and the best fit $c$ is larger than $c = \SI{0.13}{\per\hour}$. Some of this discrepancy might be due to the inclusion of spatial effects in the ABM, but Pinilla et al.\ also used more data --- they used both a single cycle and multiple cycle experiment as well as viral RNA measurements --- to constrain the parameter estimates. All in all, the ABM/PDM model can replicate the viral titer measurements of a typical infection via fitting where the fitting process uses standard packaged fitting algorithms and the computational time for fitting is less than 24 hours from inital guess to best fit.
+
 \begin{table}
 \centering
-\caption{Parameter values to simulate SARS-CoV-2 infection with the ABM/PDM model.\label{params}}
-\resizebox{\textwidth}{!}{%
+\caption{Best fit parameter values from fitting model to experimental data \citep{pinilla12}. \label{tab_datafit_params}}
 \begin{tabular}{llc}
 \hline
 Parameter & Meaning & Value \\
 \hline
-$\beta^a$ & Infection rate & $\SI{84.0}{\per\hour}$ \\
-$\tau_E^b$ & Mean eclipse duration & \SI{5.88}{\hour} \\
-$n_E^c$ & Eclipse shape parameter & 30 \\
-$\tau_I^b$ & Mean infectious lifespan & \SI{0.624}{\hour} \\
-$n_I^c$ & Infectious shape parameter & 100 \\
-$p^a$ & Viral production rate & $\SI{19900}{\per\hour}$ \\
-$c^b$ & Viral clearance rate & \SI{0.00490}{\per\hour} \\
-$D^d$ & Diffusion coefficient & $\SI{4.80e-12}{\meter^2\per\second}$ \\
-\hline
-\multicolumn{2}{l}{$^a$Parameters taken from \citep{pinky20}, but scaled.}\\
-\multicolumn{2}{l}{$^b$Parameters taken from \citep{pinky20}.}\\
-\multicolumn{2}{l}{$^c$Parameters taken from \citep{pinilla12}.}\\
-\multicolumn{2}{l}{$^d$Parameter calculated from Stokes-Einstein equation.}
-\end{tabular}}
+$\beta$ & Infection rate & 54 $/\mathrm{h}$ \\
+$p$ & Viral production rate & 3000 $/\mathrm{h}$ \\
+$c$ & Viral clearance rate & 0.25 $/\mathrm{h}$ \\
+$D$ & Diffusion coefficient & 2.2$\times 10^{-8}$ $\mathrm{m}^2/\mathrm{h}$ (fixed) \\
+$\tau_E$ & Mean eclipse duration & 16 $\mathrm{h}$ \\
+$\eta_E$ & Eclipse shape parameter & 30 (fixed) \\
+$\tau_I$ & Mean infectious lifespan & 26 $\mathrm{h}$ \\
+$\eta_I$ & Infectious shape parameter & 100 (fixed) \\
+\end{tabular}
 \end{table}
 
-\subsection{Measurements}
-
-
-We simulate SARS-CoV-2 infections starting with different multiplicity of infection (MOI) where the MOI value defines the initial number of infected cells. The ABM/PDM model is implemented in Compute Unified Device Architecture (CUDA) and run on NVIDIA graphics processing units. We perform 100 simulated infections for each MOI and measure the following features of the viral titer curve (Fig.\ \ref{measurements}): 
-\begin{itemize}
-\item \textbf{peak viral load:} The maximum amount of virus is commonly used as an indicator of the transmissibility of an infection \citep{handel09}. 
-\item \textbf{time of viral peak:} This is the time between the start of the infection and the peak of the virus and can give an indication of how quickly the virus is replicating.
-\item \textbf{viral upslope:} Viral upslope is the exponential growth rate of the viral titer before the peak is reached and is another indication of how quickly the virus is spreading from cell to cell. 
-\item \textbf{area under the curve (AUC):} AUC is often used to assess the severity of an infection \citep{hayden00, barroso05}.
-\item \textbf{infection duration:} The infection duration is indicative of how long an infected patient might test positive for presence of the virus. Note that the threshold used here is 10$^7$ virions based on a 10$^2$ RNA copies/ml detection threshold for the experimental data \citep{goncalves20} that is converted to individual virions.
-\end{itemize}
-\begin{figure}[!h]
-
-\begin{center}
-\resizebox{0.6\textwidth}{!}{\includegraphics{Figures/measurements}}
-\caption{Characteristics of the viral titer curve that are used to assess severity of the infection.\label{measurements}}
-\end{center}
-\end{figure} 
-
-
-\section{Results}
-
-Fig.\ \ref{curves} shows the viral titer curves for different MOI of SARS-CoV-2, where the darker line for each color shows the curve of median values and the lighter colored lines are the 100 individual simulations. Note that for most MOI, there is very little variation between simulations once the viral titer is large. The exception is the lowest MOI of 10$^{-5}$ where there is more variation in the exact trajectory of the viral load. We see some obvious shifts in the viral titer curve as the MOI increases. For high MOI, the viral titer curve reaches its peak very quickly, with lower MOIs moving the peak farther out in time. The peak also becomes broader and lower as the MOI becomes lower, suggesting longer infection durations, but with lower viral loads.
-\begin{figure}[!h]
-\begin{center}
-\resizebox{0.6\textwidth}{!}{\includegraphics{Figures/Covid_AllOnOne_Median_VirusVsTime}}
-\caption{Viral loads for infections initiated with different MOI. Dark lines of each color indicate the viral load curve using the median of 100 simulations, while the lighter colored lines show the viral load kinetics for each individual simulation. The dashed line indicates the threshold of detection used to calculate infection duration. \label{curves}}
-\end{center}
+\begin{figure}
+\centering
+    \includegraphics[width=0.6\linewidth]{Figures/DataFit.pdf}
+\caption{The ten simulated titer curves and corresponding median curve are plotted in blue. The experimental cell-free transmission data \citep{pinilla12} is plotted in green. The median curve has the minimal SSR with respect to the experimental data, when using the best fit parameters. The best fit parameters are shown in \ref{tab_datafit_params}. \label{fig_DataFit}}
 \end{figure}
 
-For a more quantitative assessment, we measure the characteristics described in Methods. The results are shown in Fig.\ \ref{results}, which shows peak viral load (top left), time of viral peak (top right), viral upslope (center left), AUC (center right), and infection duration (bottom) as functions of the MOI. The peak viral load increases with increasing initial inoculum, but it appears to reach a plateau as we near an MOI of 1. The time of peak, on the other hand, decreases with increasing initial inoculum, reaching a fixed small value at high MOI. There are real plateaus here since each cell will produce an average of $p\tau_I$ viral particles. At an MOI of 1, all cells are initially infected and will start producing virus at about the same time, meaning that all that virus is released almost simultaneously and there is no second cycle of infection. At slightly lower MOIs, most cells are initially infected, but some cells will be infected in a second or third cycle of infection, reducing the large burst of virus at one time, which causes a delay, reduction, and broadening in the peak. The upslope, or growth rate, of the viral titer curve increases as the MOI increases. This is also driven by the larger amount of virus being produced in the first cycle of infection as the MOI increases. Finally, the AUC and infection duration both decrease as the initial inoculum increases.  
-\begin{figure}[!h]
-\begin{center}
-%\resizebox{0.48\textwidth}{!}{\includegraphics{Figures/CovidApectGraphs/PeakViralTitter}}
-%\resizebox{0.48\textwidth}{!}{\includegraphics{Figures/CovidApectGraphs/TimeofPeakViralTitter}}
-%\resizebox{0.48\textwidth}{!}{\includegraphics{Figures/CovidApectGraphs/New_UpSlope}}
-%\resizebox{0.48\textwidth}{!}{\includegraphics{Figures/CovidApectGraphs/AUC}}
-%\resizebox{0.48\textwidth}{!}{\includegraphics{Figures/CovidApectGraphs/InfectionDuration}}
-\caption{Effect of initial inoculum on viral titer characteristics. The graphs show peak viral load (top left), time of viral peak (top right), viral upslope (center left), AUC (center right), and infection duration (bottom) as functions of MOI. \label{results}}
-\end{center}
-\end{figure}
+\section{Summary}
 
+In this paper, the construction of a hybrid ABM/PDM model to investigate spatially extended viral infections is described. While the formulation of the model is similar to other ABM/PDM models of viral spread \citep{beauchemin_simple_2005, bauer_agent-based_2009}, The model was implemented to run on GPUs, vastly improving the simulation speed of these models. This allows for efficient replication of \emph{in vitro} infections with a realistic number of cells. This will help lead to a better understanding of virus-cell dynamics \emph{in vitro} \citep{blahut21}, but could also help realize the goal of simulating infections \emph{in vivo} \citep{laubenbacher21}. The faster simulations also allowed us to use standard ODE model-fitting techniques to fit this model to experimental data, making it possible to quickly parameterize these models to reproduce dynamics of different viruses. Previously, researchers have had to develop other techniques to help speed up fitting of ABMs to experimental data, including reducing the sampled parameter space \citep{li17}, and mapping of ABM outputs to simpler functions \citep{tong_development_2015, read16}. These techniques coupled with simulation of ABMs on GPUs could potentially allow for real-time parameter estimation of models for use in patient care. This is particularly useful for a novel pandemic virus that can be simulated such that trial runs of test drugs can be performed and viral infection severity for a patient can potentially be predicted.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Discussion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Our study finds that initial viral inoculum does alter the viral time course by increasing the peak viral load, moving the peak earlier, increasing the viral upslope, and decreasing both AUC and infection duration, as the initial inoculum increases. 
 
 
