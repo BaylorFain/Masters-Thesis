@@ -1,13 +1,9 @@
 
-Following the methods presented in the previous chapter results in a model, for studying viruses, that has the spatial spread of virus, the ability to produce simulations in seconds, and the flexibility to be applied to real data. In this chapter, the accuracy, speed, and applicability of the model is presented. I will show accurate simulations of plaque assays, the speed increase of the simulations by GPUs, and the analysis of virus infections.
+The methods presented in the previous chapter result in a model for studying viruses that incorporates the spatial spread of virus, that has the ability to produce simulations in seconds, and has the flexibility to be applied to real data. In this chapter, the accuracy, speed, and applicability of the model is presented. I will show accurate simulations of plaque assays, the speed increase of the simulations by GPUs, and the analysis of virus infections.
 
-\section{Results}
+\section{Model simulation}
 
-\subsection{Model simulation}
-
-Using the influenza parameters of Table \ref{tab_params}, infections initiated with 1001365 cells in a dish, an MOI of $10^{-4}$, and no initial virus were simulated. Figure \ref{fig_FullDish_cellandvirus} shows different views of plaques forming in the entire dish. On the left are cells in the different stages of infection described in section \ref{ABM}, where the healthy cells are colored green, eclipse cells are colored cyan, infected cells are colored red, and dead cells are colored black. On the right are figures showing the corresponding virus concentrations that are over the cells, where areas of higher concentration are colored yellow and areas of lower concentration are colored purple. Figure \ref{fig_FullDish_cellandvirus} shows the infection in 5 hour increments starting at 5 hours, when no cells are producing virus, and ending at 60 hours, when almost all the cells have died. The ABM reproduces the plaques typically seen in experimental \emph{in vitro} infections \citep{holder11H274Y}. 
-
-For a closer look at the plaques, figure \ref{fig_ZoominDish} is a zoomed in view of the infection at hours 6.5, 11.5, and 16.5. The cells are shown on the left, with the same color scheme used in figure \ref{fig_FullDish_cellandvirus}, and the corresponding virus distribution is shown on the right. Here the heterogeneous growth of the plaque can clearly be see; it is not simply a radially symmetric change of cells from eclipse to infectious. 
+Using the influenza parameters of Table \ref{tab_params}, I simulated infections initiated with 1001365 cells in a dish, of which 100 randomly chosen cells are infected and no initial virus. Figure \ref{fig_FullDish_cellandvirus} shows different views of plaques forming in the entire dish. On the left are cells in the different stages of infection described in section \ref{ABM}, where the healthy cells are colored green, eclipse cells are colored cyan, infected cells are colored red, and dead cells are colored black. On the right are figures showing the corresponding virus concentrations that are over the cells, where areas of higher concentration are colored yellow and areas of lower concentration are colored purple. Figure \ref{fig_FullDish_cellandvirus} shows the infection in 5 hour increments starting at 5 hours, when no cells are producing virus, and ending at 60 hours, when almost all the cells have died. The ABM reproduces the plaques typically seen in experimental \emph{in vitro} infections \citep{holder11H274Y}. 
 
 \begin{figure}
 \centering
@@ -67,6 +63,8 @@ For a closer look at the plaques, figure \ref{fig_ZoominDish} is a zoomed in vie
 \caption{The dish at hours 5 through 60 in 5 hour increments. On the left are cells in the different stages of infection; the stages are represented by healthy cells colored green, eclipse cells colored cyan, infected cells colored red, and dead cells colored black. On the right are images of the virions that are diffusing over the cells; areas of higher concentration are represented by yellow and areas of lower concentration are represented by purple. \label{fig_FullDish_cellandvirus}}
 \end{figure}
 
+For a closer look at the plaques, figure \ref{fig_ZoominDish} is a zoomed in view of the infection at hours 6.5, 11.5, and 16.5. The cells are shown on the left, with the same color scheme used in figure \ref{fig_FullDish_cellandvirus}, and the corresponding virus distribution is shown on the right. Here the heterogeneous growth of the plaque can clearly be see; it is not simply a radially symmetric change of cells from eclipse to infectious. \color{red} Add something like Fig.\ 8 of your proposal here. \color{black} 
+
 \begin{figure}
 \centering
 \begin{minipage}{0.66\linewidth}
@@ -88,7 +86,7 @@ For a closer look at the plaques, figure \ref{fig_ZoominDish} is a zoomed in vie
 \caption{A zoomed in section of the dish looking at the plaque formed by a single infected cell during a viral infection at hours 6.5, 11.5, and 16.5. On the left are cells in the different stages of infection; the stages are represented by healthy cells colored green, eclipse cells colored cyan, infected cells colored red, and dead cells colored black. On the right are the many virus that are diffusing over the cells; areas of higher concentration are represented by yellow and areas of lower concentration are represented by purple. \label{fig_ZoominDish}}
 \end{figure}
 
-\subsection{Implementation on GPUs}
+\section{Implementation on GPUs}
 
 Ten viral infections of five different numbers of cells were simulated, with codes that utilize three different programming languages: Python, C, and CUDA. The amount of computation time needed to simulate one hour of the infection, on a desktop computer, is shown in figure \ref{fig:SpeedComparison}. The computer was built with an Intel Xeon E-2144G CPU, 16 gigabytes of RAM, and P4000 Nvidia Graphics card. The compute times for the three codes increase as the number of cells in the simulations increases, but the speed increase of switching from Python, the programming language commonly used in physics, to code using CUDA for implementation on GPUs is 6954 times faster.
 \begin{figure}
@@ -98,7 +96,7 @@ Ten viral infections of five different numbers of cells were simulated, with cod
 \end{figure}
 
 %\clearpage
-\subsection{Convergence Testing}
+\section{Convergence Testing}
 
 Three scenarios were examined when testing the convergence of the model: an infection initiated with $10013$ cells in the eclipse phase (Initial Cell); an infection initiated with $10^{12}$ virions (Initial Virus); and a scenario with no infection, but $10^{12}$ virions (Only Virus), examining viral spread and decay only. Simulations in each of the scenarios used the influenza parameters from Table \ref{tab_params}. Figure \ref{fig:ViralTiterCurves} shows the simulations of the three scenarios, where the time step was varied to test the convergence of the model in time. A time step of 0.005 hr was chosen and a range around it was made by dividing or multiplying by 2 repeatedly. This formed an array of seven time step values, 0.000625, 0.00128, 0.0025, 0.005, 0.01, 0.02, and 0.04 hr. For each time step, the median curve of ten viral titer curves is shown. In figure \ref{fig:ViralTiterCurves}, from left to right, curves of a viral infection initiated with infected cells; curves of a viral infection initiated with virus; and curves of virus without underlying cell infection. For all time steps, except $0.04$ hr, the curves are hard to distinguish from one another and follow the same trend for each scenario. 
 
@@ -126,7 +124,7 @@ Three scenarios were examined when testing the convergence of the model: an infe
 \caption{The time step was varied to test the convergence of the model in time. A time step of 0.005 hr was chosen and a range around it was made by dividing or multiplying by 2 repeatedly. Seven values were used [0.000625, 0.00128, 0.0025, 0.005, 0.01, 0.02, 0.04]. The median curve of ten viral titer curves is shown for each time step. From left to right, curves of a viral infection exhibiting cell-free transmission initiated with infected cells; curves of a viral infection exhibiting cell-free transmission initiated with virus; and curves of virus without underlying cell infection. \label{fig:ViralTiterCurves}}
 \end{figure}
 
-In figure \ref{fig_AspectGraphs} the different viral titer curves are explored further by plotting the measurable characteristics mentioned in section \ref{Viral_transmission} for each time step. For all the characteristics, except AUC, the amount of change was in the hundreds place or less, so for time characteristics the amount of change was less the \SI{14.5}{\minute}, for 1/time characteristics the amount of change was less the \SI{6.9e-6}{\per\minute}, and for amount of virus characteristics the amount of change was less the \num{10e10} virus particles, which is less then \SI{1}{\percent} change in the amount of virus.
+In figure \ref{fig_AspectGraphs} the different viral titer curves are explored further by plotting the measurable characteristics mentioned in section \ref{convergence_measures} for each time step. For all the characteristics, except AUC, the amount of change was in the hundredths place or less, so for time characteristics the amount of change was less the \SI{14.5}{\minute}, for 1/time characteristics the amount of change was less the \SI{6.9e-6}{\per\minute}, and for amount of virus characteristics the amount of change was less the \num{10e10} virus particles, which is less then \SI{1}{\percent} change in the amount of virus. Note that typical experimental error in measurements of viral load are typically 0.5 $\log_{10}$(pfu/ml) \cite{labarre01}.
 
 \begin{figure}
 \centering
@@ -181,7 +179,7 @@ In figure \ref{fig_AspectGraphs} the different viral titer curves are explored f
 \caption{Characteristics of the viral titer curves where measured for each of the seven time steps and the different scenerios.\label{fig_AspectGraphs}}
 \end{figure}
 
-\subsection{Fitting the model to data}
+\section{Fitting the model to data}
 
 The model is fit to experimental \emph{in vitro} data \citep{pinilla12} via minimization of the SSR. The initial condition of the simulations were: 501535 cells in the dish (similar to the number of cells in a typical 24-well plate \citep{Number_of_cells_in_a_dish_noauthor_useful_nodate}), 50 initial infected cells, and no virus in the dish. In figure \ref{fig_DataFit}, the median curve of ten simulations, using the best fit parameters, is plotted in dark blue alongside the data in green. Our best fit parameters are presented in Table \ref{tab_datafit_params}. Although the same data was used, some of our parameter estimates differ from those reported in Pinilla et al.\ \citep{pinilla12}. Our best fit $\tau_I$ is smaller than the $\tau_I = \SI{49}{\hour}$ reported by Pinilla et al., while our best fit $\tau_E$ is larger than the $\tau_E = \SI{6.6}{\hour}$ found by Pinilla et al., and the best fit $c$ is larger than $c = \SI{0.13}{\per\hour}$. Some of this discrepancy might be due to the inclusion of spatial effects in the ABM, but Pinilla et al.\ also used more data --- they used both a single cycle and multiple cycle experiment as well as viral RNA measurements --- to constrain the parameter estimates. All in all, the ABM/PDM model can replicate the viral titer measurements of a typical infection via fitting where the fitting process uses standard packaged fitting algorithms and the computational time for fitting is less than 24 hours from inital guess to best fit.
 
