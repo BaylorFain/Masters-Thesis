@@ -2,6 +2,7 @@
 The COVID-19 pandemic indicates how great of a need there is for accurate and fast modeling methods. In this thesis, I describe a model that incorporates the spatial spread of viruses and produces accurate simulations in a few seconds or minutes, so that the model can be used to study viruses in a more accurate way. 
 
 \section{Basic Virology}
+
 Viruses are microscopic parasites, generally much smaller than bacteria, that lack the capacity to thrive and reproduce outside of a host body. A virus is composed of a nucleic acid genome and a protein capsid that covers the genome. As seen in figure \ref{fig:Virus_Replication}, the life cycle of a virus begins with the virus attaching to or being absorbed by the host cell. Once the virus genome enters into a cell, the genome moves to the ribosomes, where the genome is replicated. After the genome is replicated, new virus can be assembled and released from the host cell, allowing the virus to continue spreading throughout the host cells \citep{openstax_microbiology_2016}.
 
 \begin{figure}[h]
@@ -29,7 +30,7 @@ While it might be feasible to wait long periods of time to run accurate simulati
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Scope}
 
-In this work, the testing, validation, and application of a hybrid ABM and partial differential equation model (PDM) implemented on GPUs is presented. The work here begins with the methods where the four attributes of the model: (1) the agent-based model of the cells, (2) the partial differential equation of the virus, (3) the cell-free transmission mode of viruses, and (4) fitting of the model to data, are explained.  Then, the results of model implementation with parallel programming, convergence testing, and simulation speed improvement are presented. Finally, I show that the model can reproduce experiments by fitting the model to an \emph{in vitro} influenza virus experiment and an \emph{in vitro} SARS-Cov-2 experiment. This work shows how an ABM/PDM hybrid model of in-host infections is tested for numerical convergence, is applied to experimental data for parameter extraction, and produces simulations within seconds to minutes for timely application.
+In this work, the testing, validation, and application of a hybrid ABM and partial differential equation model (PDM) implemented on GPUs is presented. The work here begins with the methods where the four attributes of the model: (1) the agent-based model of the cells, (2) the partial differential equation of the virus, (3) the cell-free transmission mode of viruses, and (4) fitting of the model to data, are explained.  Then, the results of model implementation with parallel programming, convergence testing, and simulation speed improvement are presented. Finally, I show that the model can reproduce experiments by fitting the model to an \emph{in vitro} influenza virus experiment and an \emph{in vitro} SARS-Cov-2 experiment. This work shows how an ABM/PDM hybrid model of in-host infections is tested for numerical convergence, is applied to experimental data for parameter extraction, and produces simulations within seconds to minutes for timely application. 
 
 
 
