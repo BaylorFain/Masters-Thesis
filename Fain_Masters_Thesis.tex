@@ -26,7 +26,7 @@
 \begin{document}
 
 %%%%% THESIS TEMPLATE INFORMATION --- Fill all of these entries in!  %%%%%%%%
-\title{NEEDS A TITLE}           % Title of dissertation or thesis
+\title{Applying desktop GPUs to a hybrid ABM and PDM: model validation and rapid simulation of viral infections}           % Title of dissertation or thesis
 \author{Baylor G.\ Fain}           % Your full name + middle initial
 \hometown{Canton, Texas}     % Hometown or current city
 \department{Department of Physics and Astronomy}    % TCU Department
@@ -43,13 +43,15 @@
 \advisor{Major Advisor, Dr.\ Hana Dobrovolny, Associate Professor of Biophysics}    % Full name and title of your advisor
 
 \frontmatter 
-\acknowledgements{TextBlock/acknowledgements}  % Document which contains the text of your acknowledgements
+\acknowledgements{TextBlock/acknowledgments}
 \tableofcontents
 \clearpage \listoffigures
-\clearpage \listoftables
-	
-\mainmatter % Remove the following \input commands and change them to the files containing the text of your document
-\clearpage \input{TextBlock/abbreviations} %list of abvs.
+\clearpage \listoftables	
+\clearpage \abbreviations{TextBlock/abbreviations} %list of abvs.
+
+\mainmatter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Remove the following \input commands and change them to the files containing the text of your document
 \chapter{Introduction}
 \input{TextBlock/chapter1}
 \chapter{Methods}
@@ -60,8 +62,8 @@
 \input{TextBlock/chapter4}
 
 
-\appendix   % Use \input statements to include any necessary appendices
-\input{TextBlock/app_if_needed}
+%\appendix   % Use \input statements to include any necessary appendices
+%\input{TextBlock/app_if_needed}
 
 \backmatter 
 \bibliography{allbibliographies}

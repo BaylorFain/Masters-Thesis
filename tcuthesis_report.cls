@@ -645,7 +645,7 @@
               {\MakeUppercase\listfigurename}%
     \@starttoc{lof}%
     \if@restonecol\twocolumn\fi
-    }
+    \addcontentsline{toc}{chapter}{List of Figures}}
 \newcommand*\l@figure{\@dottedtocline{1}{1.5em}{2.3em}}
 \newcommand\listoftables{%
     \if@twocolumn
@@ -659,7 +659,7 @@
          {\MakeUppercase\listtablename}%
     \@starttoc{lot}%
     \if@restonecol\twocolumn\fi
-    }
+    \addcontentsline{toc}{chapter}{List of Tables}}
 \let\l@table\l@figure
 \newdimen\bibindent
 \setlength\bibindent{1.5em}
@@ -847,12 +847,21 @@
 }
 
 \newcommand{\acknowledgements}[1]{
-  \begin{center}
-    ACKNOWLEDGEMENTS
-  \end{center}
-  \vspace{15mm}
-  \input{#1}
-  \clearpage
+    \begin{center}
+        ACKNOWLEDGMENTS
+    \end{center}
+    \vspace{15mm}
+    \addcontentsline{toc}{chapter}{Acknowledgments}
+    \input{#1}
+    \clearpage
+}
+
+\newcommand{\abbreviations}[1]{
+    \chapter*{List of Abbreviations}
+    \addcontentsline{toc}{chapter}{List of Abbreviations}
+    \input{#1}
+    \clearpage
+    \@starttoc{lof}%
 }
 
 \newcommand{\backmatter}{
